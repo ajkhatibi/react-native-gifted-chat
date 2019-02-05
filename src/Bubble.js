@@ -6,16 +6,20 @@ import { Text, Clipboard, StyleSheet, TouchableWithoutFeedback, View, ViewPropTy
 
 import MessageText from './MessageText';
 import MessageImage from './MessageImage';
-import MessageVideo from './MessageVideo';
-
 import Time from './Time';
 import Color from './Color';
 
 import { isSameUser, isSameDay } from './utils';
+import MessageVideo from './MessageVideo';
 
-export default class Bubble extends React.Component {
+export default class Bubble extends React.PureComponent {
 
-  onLongPress = () => {
+  constructor(props) {
+    super(props);
+    this.onLongPress = this.onLongPress.bind(this);
+  }
+
+  onLongPress() {
     if (this.props.onLongPress) {
       this.props.onLongPress(this.context, this.props.currentMessage);
     } else if (this.props.currentMessage.text) {
@@ -37,7 +41,7 @@ export default class Bubble extends React.Component {
         },
       );
     }
-  };
+  }
 
   handleBubbleToNext() {
     if (
@@ -137,7 +141,9 @@ export default class Bubble extends React.Component {
       }
       return (
         <View style={styles.usernameView}>
-          <Text style={[styles.username, this.props.usernameStyle]}>~ {currentMessage.user.name}</Text>
+          <Text style={[styles.username, this.props.usernameStyle]}>
+            ~ {currentMessage.user.name}
+          </Text>
         </View>
       );
     }
@@ -194,7 +200,7 @@ const styles = {
     },
     wrapper: {
       borderRadius: 15,
-      backgroundColor: Color.leftBubbleBackground,
+      backgroundColor: '#24ccca',
       marginRight: 60,
       minHeight: 20,
       justifyContent: 'flex-end',
@@ -217,7 +223,7 @@ const styles = {
     },
     wrapper: {
       borderRadius: 15,
-      backgroundColor: Color.defaultBlue,
+      backgroundColor: Color.leftBubbleBackground,
       marginLeft: 60,
       minHeight: 20,
       justifyContent: 'flex-end',

@@ -10,57 +10,51 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import { FlatList, View, StyleSheet, Keyboard, TouchableOpacity, Text } from 'react-native';
+import { FlatList, View, StyleSheet, Keyboard } from 'react-native';
 
 import LoadEarlier from './LoadEarlier';
 import Message from './Message';
-import Color from './Color';
 
-export default class MessageContainer extends React.Component {
+export default class MessageContainer extends React.PureComponent {
 
-  state = {
-    showScrollBottom: false,
-  }
+  constructor(props) {
+    super(props);
 
-  componentDidMount() {
-    if (this.props.messages.length === 0) {
-      this.attachKeyboardListeners();
+    this.renderRow = this.renderRow.bind(this);
+    this.renderFooter = this.renderFooter.bind(this);
+    this.renderLoadEarlier = this.renderLoadEarlier.bind(this);
+    this.renderHeaderWrapper = this.renderHeaderWrapper.bind(this);
+    this.attachKeyboardListeners = this.attachKeyboardListeners.bind(this);
+    this.detatchKeyboardListeners = this.detatchKeyboardListeners.bind(this);
+
+    if (props.messages.length === 0) {
+      this.attachKeyboardListeners(props);
     }
-  }
-
-  shouldComponentUpdate(nextProps) {
-    const next = nextProps.messages;
-    const current = this.props.messages;
-    return (
-      next.length !== current.length || next.extraData !== current.extraData || next.loadEarlier !== current.loadEarlier
-    );
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.messages.length === 0 && nextProps.messages.length > 0) {
-      this.detachKeyboardListeners();
+      this.detatchKeyboardListeners();
     } else if (this.props.messages.length > 0 && nextProps.messages.length === 0) {
       this.attachKeyboardListeners(nextProps);
     }
   }
 
-  attachKeyboardListeners = () => {
-    const { invertibleScrollViewProps: invertibleProps } = this.props;
-    Keyboard.addListener('keyboardWillShow', invertibleProps.onKeyboardWillShow);
-    Keyboard.addListener('keyboardDidShow', invertibleProps.onKeyboardDidShow);
-    Keyboard.addListener('keyboardWillHide', invertibleProps.onKeyboardWillHide);
-    Keyboard.addListener('keyboardDidHide', invertibleProps.onKeyboardDidHide);
-  };
+  attachKeyboardListeners(props) {
+    Keyboard.addListener('keyboardWillShow', props.invertibleScrollViewProps.onKeyboardWillShow);
+    Keyboard.addListener('keyboardDidShow', props.invertibleScrollViewProps.onKeyboardDidShow);
+    Keyboard.addListener('keyboardWillHide', props.invertibleScrollViewProps.onKeyboardWillHide);
+    Keyboard.addListener('keyboardDidHide', props.invertibleScrollViewProps.onKeyboardDidHide);
+  }
 
-  detachKeyboardListeners = () => {
-    const { invertibleScrollViewProps: invertibleProps } = this.props;
-    Keyboard.removeListener('keyboardWillShow', invertibleProps.onKeyboardWillShow);
-    Keyboard.removeListener('keyboardDidShow', invertibleProps.onKeyboardDidShow);
-    Keyboard.removeListener('keyboardWillHide', invertibleProps.onKeyboardWillHide);
-    Keyboard.removeListener('keyboardDidHide', invertibleProps.onKeyboardDidHide);
-  };
+  detatchKeyboardListeners() {
+    Keyboard.removeListener('keyboardWillShow', this.props.invertibleScrollViewProps.onKeyboardWillShow);
+    Keyboard.removeListener('keyboardDidShow', this.props.invertibleScrollViewProps.onKeyboardDidShow);
+    Keyboard.removeListener('keyboardWillHide', this.props.invertibleScrollViewProps.onKeyboardWillHide);
+    Keyboard.removeListener('keyboardDidHide', this.props.invertibleScrollViewProps.onKeyboardDidHide);
+  }
 
-  renderFooter = () => {
+  renderFooter() {
     if (this.props.renderFooter) {
       const footerProps = {
         ...this.props,
@@ -68,9 +62,9 @@ export default class MessageContainer extends React.Component {
       return this.props.renderFooter(footerProps);
     }
     return null;
-  };
+  }
 
-  renderLoadEarlier = () => {
+  renderLoadEarlier() {
     if (this.props.loadEarlier === true) {
       const loadEarlierProps = {
         ...this.props,
@@ -81,27 +75,15 @@ export default class MessageContainer extends React.Component {
       return <LoadEarlier {...loadEarlierProps} />;
     }
     return null;
-  };
+  }
 
   scrollTo(options) {
-    if (this.flatListRef && options) {
+    if (this.flatListRef) {
       this.flatListRef.scrollToOffset(options);
     }
   }
 
-  scrollToBottom = () => {
-    this.scrollTo({ offset: 0, animated: 'true' });
-  }
-
-  handleOnScroll = (event) => {
-    if (event.nativeEvent.contentOffset.y > this.props.scrollToBottomOffset) {
-      this.setState({ showScrollBottom: true });
-    } else {
-      this.setState({ showScrollBottom: false });
-    }
-  }
-
-  renderRow = ({ item, index }) => {
+  renderRow({ item, index }) {
     if (!item._id && item._id !== 0) {
       console.warn('GiftedChat: `_id` is missing for message', JSON.stringify(item));
     }
@@ -128,29 +110,13 @@ export default class MessageContainer extends React.Component {
       return this.props.renderMessage(messageProps);
     }
     return <Message {...messageProps} />;
-  };
-
-  renderHeaderWrapper = () => <View style={styles.headerWrapper}>{this.renderLoadEarlier()}</View>;
-
-  renderScrollToBottomWrapper() {
-    const scrollToBottomComponent = (
-      <View style={styles.scrollToBottomStyle}>
-        <TouchableOpacity onPress={this.scrollToBottom} hitSlop={{ top: 5, left: 5, right: 5, bottom: 5 }}>
-          <Text>V</Text>
-        </TouchableOpacity>
-      </View>
-    );
-
-    if (this.props.scrollToBottomComponent) {
-      return (
-        <TouchableOpacity onPress={this.scrollToBottom} hitSlop={{ top: 5, left: 5, right: 5, bottom: 5 }}>
-          {this.props.scrollToBottomComponent}
-        </TouchableOpacity>);
-    }
-    return scrollToBottomComponent;
   }
 
-  keyExtractor = (item) => `${item._id}`;
+  renderHeaderWrapper() {
+    return <View style={styles.headerWrapper}>{this.renderLoadEarlier()}</View>;
+  }
+
+  keyExtractor = (item) => `${item._id}`
 
   render() {
     if (this.props.messages.length === 0) {
@@ -158,7 +124,6 @@ export default class MessageContainer extends React.Component {
     }
     return (
       <View style={styles.container}>
-        {this.state.showScrollBottom && this.props.scrollToBottom ? this.renderScrollToBottomWrapper() : null}
         <FlatList
           ref={(ref) => (this.flatListRef = ref)}
           extraData={this.props.extraData}
@@ -173,8 +138,6 @@ export default class MessageContainer extends React.Component {
           {...this.props.invertibleScrollViewProps}
           ListFooterComponent={this.renderHeaderWrapper}
           ListHeaderComponent={this.renderFooter}
-          onScroll={this.handleOnScroll}
-          scrollEventThrottle={100}
           {...this.props.listViewProps}
         />
       </View>
@@ -196,25 +159,6 @@ const styles = StyleSheet.create({
   listStyle: {
     flex: 1,
   },
-  scrollToBottomStyle: {
-    opacity: 0.8,
-    position: 'absolute',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    right: 10,
-    bottom: 30,
-    zIndex: 999,
-    height: 40,
-    width: 40,
-    borderRadius: 20,
-    backgroundColor: Color.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: Color.black,
-    shadowOpacity: 0.5,
-    shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 1,
-  },
 });
 
 MessageContainer.defaultProps = {
@@ -226,10 +170,8 @@ MessageContainer.defaultProps = {
   inverted: true,
   loadEarlier: false,
   listViewProps: {},
-  invertibleScrollViewProps: {},
+  invertibleScrollViewProps: {}, // TODO: support or not?
   extraData: null,
-  scrollToBottom: false,
-  scrollToBottomOffset: 200,
 };
 
 MessageContainer.propTypes = {
@@ -242,9 +184,6 @@ MessageContainer.propTypes = {
   listViewProps: PropTypes.object,
   inverted: PropTypes.bool,
   loadEarlier: PropTypes.bool,
-  invertibleScrollViewProps: PropTypes.object,
+  invertibleScrollViewProps: PropTypes.object, // TODO: support or not?
   extraData: PropTypes.object,
-  scrollToBottom: PropTypes.bool,
-  scrollToBottomOffset: PropTypes.number,
-  scrollToBottomComponent: PropTypes.func,
 };
