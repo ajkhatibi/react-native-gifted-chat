@@ -2,7 +2,7 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import { View, ViewPropTypes, StyleSheet } from 'react-native';
+import { View, ViewPropTypes, StyleSheet, Animated } from 'react-native';
 
 import Avatar from './Avatar';
 import Bubble from './Bubble';
@@ -33,6 +33,18 @@ const styles = {
 };
 
 export default class Message extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      animatedValue: new Animated.Value(0)
+    }
+  }
+  componentDidMount = () => {
+    Animated.timing(this.state.animatedValue, {
+      toValue: 1,
+      duration: 500
+    }).start();
+  }
 
   getInnerComponentProps() {
     const { containerStyle, ...props } = this.props;
@@ -84,25 +96,30 @@ export default class Message extends React.PureComponent {
 
   render() {
     const sameUser = isSameUser(this.props.currentMessage, this.props.nextMessage);
+    const x = this.state.animatedValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, 1]
+    });
     return (
       <View>
         {this.renderDay()}
         {this.props.currentMessage.system ? (
           this.renderSystemMessage()
         ) : (
-          <View
-            style={[
-              styles[this.props.position].container,
-              { marginBottom: sameUser ? 2 : 10 },
-              !this.props.inverted && { marginBottom: 2 },
-              this.props.containerStyle[this.props.position],
-            ]}
-          >
-            {this.props.position === 'left' ? this.renderAvatar() : null}
-            {this.renderBubble()}
-            {this.props.position === 'right' ? this.renderAvatar() : null}
-          </View>
-        )}
+            <Animated.View
+              style={[
+                styles[this.props.position].container,
+                { marginBottom: sameUser ? 2 : 10 },
+                !this.props.inverted && { marginBottom: 2 },
+                this.props.containerStyle[this.props.position],
+                { opacity: x }
+              ]}
+            >
+              {this.props.position === 'left' ? this.renderAvatar() : null}
+              {this.renderBubble()}
+              {this.props.position === 'right' ? this.renderAvatar() : null}
+            </Animated.View>
+          )}
       </View>
     );
   }

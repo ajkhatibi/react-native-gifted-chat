@@ -9,7 +9,7 @@ export default function SystemMessage({ currentMessage, containerStyle, wrapperS
   return (
     <View style={[styles.container, containerStyle]}>
       <View style={[styles.wrapper, wrapperStyle, { alignItems: 'center' }]}>
-        <Image source={image} style={{ resizeMode: 'cover', width: 150, height: 150, margin: 10  }} />
+        <Image source={image} style={{ resizeMode: 'contain', width: 150, height: 150, margin: 10  }} />
         <Text style={[styles.text, textStyle]}>{currentMessage.text}</Text>
       </View>
     </View>

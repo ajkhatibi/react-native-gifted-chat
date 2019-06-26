@@ -105,6 +105,7 @@ const styles = {
     container: {},
     text: {
       color: 'white',
+      fontFamily: 'Comfortaa',
       ...textStyle,
     },
     link: {
@@ -116,6 +117,7 @@ const styles = {
     container: {},
     text: {
       color: 'black',
+      fontFamily: 'Comfortaa',
       ...textStyle,
     },
     link: {
