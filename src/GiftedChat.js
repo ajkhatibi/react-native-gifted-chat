@@ -525,7 +525,7 @@ class GiftedChat extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0.98
+    flex: 0.96
   }
 });
 
